@@ -1,10 +1,11 @@
 import { getActiveSemester, getSemesters } from '@/lib/services/semester.service'
 import { getCourses } from '@/lib/services/course.service'
-import { getRecentTasks } from '@/lib/services/task.service'
+import { getRecentTasks, getAllTasksForCalendar } from '@/lib/services/task.service'
 import { getStudyStats } from '@/lib/services/stats.service'
 import { getReviewSummary } from '@/lib/services/review.service'
 import Link from 'next/link'
 import { BookOpen, AlertCircle, Clock, Brain, FileText, Target, ClipboardList, Sparkles, BarChart3, Calendar, ArrowRight, RefreshCw } from 'lucide-react'
+import CalendarView from '@/components/calendar/CalendarView'
 
 export default async function DashboardPage() {
     const activeSemester = await getActiveSemester()
@@ -12,6 +13,8 @@ export default async function DashboardPage() {
     const recentTasks = await getRecentTasks(4)
     const hasSemesters = (await getSemesters()).length > 0
     const stats = await getStudyStats()
+    const now2 = new Date()
+    const calendarTasks = await getAllTasksForCalendar(now2.getFullYear(), now2.getMonth() + 1)
     let reviewSummary = { overdue: 0, today: 0, upcoming: 0, total: 0, topItems: [] as any[] }
     try { reviewSummary = await getReviewSummary() } catch { }
 
@@ -67,6 +70,23 @@ export default async function DashboardPage() {
 
                 {/* Left Column (Wider) */}
                 <div className="lg:col-span-2 space-y-8">
+
+                    {/* Calendar Widget */}
+                    <section className="bg-white border rounded-xl p-5 shadow-sm">
+                        <div className="flex justify-between items-center mb-3">
+                            <h2 className="text-lg font-bold flex items-center gap-2">
+                                <Calendar className="text-blue-500" size={18} />
+                                이번 달 일정
+                            </h2>
+                            <Link href="/calendar" className="text-xs text-blue-600 hover:underline">전체 보기</Link>
+                        </div>
+                        <CalendarView
+                            tasks={calendarTasks as any}
+                            initialYear={now2.getFullYear()}
+                            initialMonth={now2.getMonth() + 1}
+                            compact
+                        />
+                    </section>
 
                     {/* Stats Cards */}
                     <section className="grid grid-cols-2 sm:grid-cols-4 gap-4">

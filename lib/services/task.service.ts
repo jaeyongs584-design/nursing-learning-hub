@@ -31,6 +31,28 @@ export async function getRecentTasks(limit: number = 5) {
     return data
 }
 
+export async function getAllTasksForCalendar(year: number, month: number) {
+    const supabase = await createClient()
+    const startDate = new Date(year, month - 1, 1).toISOString()
+    const endDate = new Date(year, month, 0, 23, 59, 59).toISOString()
+
+    const { data, error } = await supabase
+        .from('tasks')
+        .select(`
+      *,
+      course:courses(name, color_code)
+    `)
+        .gte('due_date', startDate)
+        .lte('due_date', endDate)
+        .order('due_date', { ascending: true })
+
+    if (error) {
+        console.error('Error fetching calendar tasks:', error)
+        return []
+    }
+    return data
+}
+
 export async function getTasksByCourseId(courseId: string) {
     const supabase = await createClient()
     const { data, error } = await supabase

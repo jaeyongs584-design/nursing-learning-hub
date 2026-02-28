@@ -8,6 +8,7 @@ import {
     LogOut,
     User,
     RefreshCw,
+    Calendar,
 } from 'lucide-react'
 
 export default function AppLayout({
@@ -27,6 +28,10 @@ export default function AppLayout({
                     <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100 transition">
                         <LayoutDashboard size={20} />
                         <span className="font-medium">대시보드</span>
+                    </Link>
+                    <Link href="/calendar" className="flex items-center gap-3 px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100 transition">
+                        <Calendar size={20} />
+                        <span className="font-medium">캘린더</span>
                     </Link>
                     <Link href="/courses" className="flex items-center gap-3 px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100 transition">
                         <BookOpen size={20} />
