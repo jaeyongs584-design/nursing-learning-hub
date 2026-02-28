@@ -1,0 +1,94 @@
+﻿
+> nursing-learning-hub@0.1.0 build
+> next build
+
+node.exe : ΓÜá Warning: Next.js inferred your workspace 
+root, but it may not be correct.
+At C:\Program Files\nodejs\npm.ps1:29 char:3
++   & $NODE_EXE $NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ΓÜá Warning 
+   : Ne...not be correct.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ We detected multiple lockfiles and selected the 
+directory of C:\Users\F1324\package-lock.json as the 
+root directory.
+ To silence this warning, set `turbopack.root` in your 
+Next.js config, or consider removing one of the 
+lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/n
+ext-config-js/turbopack#root-directory for more 
+information.
+ Detected additional lockfiles: 
+   * C:\Users\F1324\Desktop\Antigrativiy\nursing-learning
+-hub\package-lock.json
+
+Γû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+- Experiments (use with caution):
+  ┬╖ serverActions
+
+ΓÜá The "middleware" file convention is deprecated. 
+Please use "proxy" instead. Learn more: 
+https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 10.5s
+  Running TypeScript ...
+Failed to compile.
+
+./components/assignment/PptOutlineGenerator.tsx:142:27
+Type error: Argument of type '{ text: string; options: { 
+bullet: { type: "character"; character: string; color: 
+string; }; color: string; fontFace: string; fontSize: 
+number; breakLine: boolean; paraSpaceAfter: number; }; 
+}[]' is not assignable to parameter of type 'string | 
+TextProps[]'.
+  Type '{ text: string; options: { bullet: { type: 
+"character"; character: string; color: string; }; color: 
+string; fontFace: string; fontSize: number; breakLine: 
+boolean; paraSpaceAfter: number; }; }[]' is not 
+assignable to type 'TextProps[]'.
+    Type '{ text: string; options: { bullet: { type: 
+"character"; character: string; color: string; }; color: 
+string; fontFace: string; fontSize: number; breakLine: 
+boolean; paraSpaceAfter: number; }; }' is not assignable 
+to type 'TextProps'.
+      The types of 'options.bullet' are incompatible 
+between these types.
+        Type '{ type: "character"; character: string; 
+color: string; }' is not assignable to type 'boolean | { 
+type?: "number" | "bullet" | undefined; characterCode?: 
+string | undefined; indent?: number | undefined; 
+numberType?: "alphaLcParenBoth" | "alphaLcParenR" | 
+"alphaLcPeriod" | ... 13 more ... | undefined; ... 4 
+more ...; style?: string | undefined; } | undefined'.
+          Type '{ type: "character"; character: string; 
+color: string; }' is not assignable to type '{ type?: 
+"number" | "bullet" | undefined; characterCode?: string 
+| undefined; indent?: number | undefined; numberType?: 
+"alphaLcParenBoth" | "alphaLcParenR" | "alphaLcPeriod" | 
+"alphaUcParenBoth" | ... 12 more ... | undefined; ... 4 
+more ...; style?: string | undefined; }'.
+            Types of property 'type' are incompatible.
+              Type '"character"' is not assignable to 
+type '"number" | "bullet" | undefined'.
+
+[0m [90m 140 |[39m                 }))[33m;[39m
+ [90m 141 |[39m
+[31m[1m>[22m[39m[90m 142 |[39m                 
+s[33m.[39maddText(bulletList[33m,[39m {
+ [90m     |[39m                           
+[31m[1m^[22m[39m
+ [90m 143 |[39m                     x[33m:[39m 
+[35m0.9[39m[33m,[39m y[33m:[39m 
+[35m1.8[39m[33m,[39m w[33m:[39m 
+[35m8.5[39m[33m,[39m h[33m:[39m 
+[35m3.0[39m[33m,[39m
+ [90m 144 |[39m                     valign[33m:[39m 
+[32m'top'[39m[33m,[39m align[33m:[39m 
+[32m'left'[39m[33m,[39m 
+lineSpacingMultiple[33m:[39m [35m1.3[39m[33m,[39m
+ [90m 145 |[39m                     autoFit[33m:[39m 
+[36mtrue[39m[0m
+Next.js build worker exited with code: 1 and signal: null

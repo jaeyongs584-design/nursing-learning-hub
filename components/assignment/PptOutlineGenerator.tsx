@@ -130,7 +130,7 @@ export default function PptOutlineGenerator({
                 const bulletList = slide.bullets.map((b) => ({
                     text: b,
                     options: {
-                        bullet: { type: 'character' as const, character: '▸', color: theme.accent },
+                        bullet: { characterCode: '25B8', color: theme.accent }, // Using hex code for '▸' (U+25B8)
                         color: '333333',
                         fontFace: 'Malgun Gothic',
                         fontSize: 18,
