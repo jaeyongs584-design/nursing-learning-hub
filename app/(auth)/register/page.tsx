@@ -1,6 +1,7 @@
 import { signup } from '@/actions/auth.actions'
 import Link from 'next/link'
 import { Mail, Lock, User } from 'lucide-react'
+import SubmitButton from '@/components/auth/SubmitButton'
 
 export default async function RegisterPage({
     searchParams,
@@ -83,9 +84,7 @@ export default async function RegisterPage({
                     </div>
                 </div>
 
-                <button className="w-full bg-blue-600 text-white py-2.5 rounded-xl font-semibold text-sm hover:bg-blue-700 transition shadow-sm hover:shadow-md">
-                    가입하기
-                </button>
+                <SubmitButton />
             </form>
 
             <div className="text-center text-sm mt-6 text-gray-500">
