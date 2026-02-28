@@ -1,0 +1,71 @@
+﻿
+> nursing-learning-hub@0.1.0 build
+> next build
+
+node.exe : ΓÜá Warning: Next.js inferred your workspace 
+root, but it may not be correct.
+At C:\Program Files\nodejs\npm.ps1:29 char:3
++   & $NODE_EXE $NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ΓÜá Warnin 
+   g: Ne...not be correct.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ We detected multiple lockfiles and selected the 
+directory of C:\Users\F1324\package-lock.json as the 
+root directory.
+ To silence this warning, set `turbopack.root` in your 
+Next.js config, or consider removing one of the 
+lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/
+next-config-js/turbopack#root-directory for more 
+information.
+ Detected additional lockfiles: 
+   * C:\Users\F1324\Desktop\Antigrativiy\nursing-learnin
+g-hub\package-lock.json
+
+Γû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+ΓÜá The "middleware" file convention is deprecated. 
+Please use "proxy" instead. Learn more: 
+https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 10.5s
+  Running TypeScript ...
+  Collecting page data using 7 workers ...
+  Generating static pages using 7 workers (0/8) ...
+  Generating static pages using 7 workers (2/8) 
+  Generating static pages using 7 workers (4/8) 
+  Generating static pages using 7 workers (6/8) 
+Γ£ô Generating static pages using 7 workers (8/8) in 836.8ms
+  Finalizing page optimization ...
+
+Route (app)
+Γöî Γùï /
+Γö£ Γùï /_not-found
+Γö£ ╞Æ /courses
+Γö£ ╞Æ /courses/[courseId]
+Γö£ ╞Æ /courses/[courseId]/ai-summary
+Γö£ ╞Æ /courses/[courseId]/analytics
+Γö£ ╞Æ /courses/[courseId]/grade-calc
+Γö£ ╞Æ /courses/[courseId]/materials
+Γö£ ╞Æ /courses/[courseId]/notes
+Γö£ ╞Æ /courses/[courseId]/quizzes
+Γö£ ╞Æ /courses/[courseId]/quizzes/[quizId]
+Γö£ ╞Æ /courses/[courseId]/quizzes/[quizId]/attempts/[attemptId]
+Γö£ ╞Æ /courses/[courseId]/quizzes/[quizId]/take
+Γö£ ╞Æ /courses/[courseId]/tasks
+Γö£ ╞Æ /courses/[courseId]/tasks/[taskId]
+Γö£ ╞Æ /courses/[courseId]/wrong-answers
+Γö£ ╞Æ /dashboard
+Γö£ ╞Æ /login
+Γö£ ╞Æ /register
+Γöö ╞Æ /tasks
+
+
+╞Æ Proxy (Middleware)
+
+Γùï  (Static)   prerendered as static content
+╞Æ  (Dynamic)  server-rendered on demand
+
