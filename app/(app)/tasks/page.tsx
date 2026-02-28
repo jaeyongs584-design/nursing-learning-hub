@@ -15,8 +15,8 @@ export default async function GlobalTasksPage() {
         <div className="space-y-6 max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">전체 과제 관리</h1>
-                    <p className="text-gray-500 mt-1">모든 과목의 과제를 한눈에 확인하고 관리하세요.</p>
+                    <h1 className="text-3xl font-bold text-gray-900">할 일 / 과제 관리</h1>
+                    <p className="text-gray-500 mt-1">과제와 할 일을 한눈에 확인하고 관리하세요.</p>
                 </div>
                 <TaskForm />
             </div>

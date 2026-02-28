@@ -27,11 +27,11 @@ export default function AppLayout({
                 <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
                     <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100 transition">
                         <LayoutDashboard size={20} />
-                        <span className="font-medium">대시보드</span>
+                        <span className="font-medium">오늘</span>
                     </Link>
-                    <Link href="/calendar" className="flex items-center gap-3 px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100 transition">
+                    <Link href="/timetable" className="flex items-center gap-3 px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100 transition">
                         <Calendar size={20} />
-                        <span className="font-medium">캘린더</span>
+                        <span className="font-medium">시간표</span>
                     </Link>
                     <Link href="/courses" className="flex items-center gap-3 px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100 transition">
                         <BookOpen size={20} />
@@ -39,11 +39,11 @@ export default function AppLayout({
                     </Link>
                     <Link href="/tasks" className="flex items-center gap-3 px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100 transition">
                         <CheckSquare size={20} />
-                        <span className="font-medium">과제 관리</span>
+                        <span className="font-medium">할 일 / 과제</span>
                     </Link>
                     <Link href="/review" className="flex items-center gap-3 px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100 transition">
                         <RefreshCw size={20} />
-                        <span className="font-medium">복습 스케줄</span>
+                        <span className="font-medium">복습</span>
                     </Link>
                 </nav>
 

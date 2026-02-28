@@ -5,10 +5,10 @@ import { usePathname } from 'next/navigation'
 import { LayoutDashboard, BookOpen, CheckSquare, RefreshCw, Calendar } from 'lucide-react'
 
 const tabs = [
-    { label: '대시보드', href: '/dashboard', icon: LayoutDashboard },
-    { label: '캘린더', href: '/calendar', icon: Calendar },
+    { label: '오늘', href: '/dashboard', icon: LayoutDashboard },
+    { label: '시간표', href: '/timetable', icon: Calendar },
     { label: '내 과목', href: '/courses', icon: BookOpen },
-    { label: '과제', href: '/tasks', icon: CheckSquare },
+    { label: '할 일', href: '/tasks', icon: CheckSquare },
     { label: '복습', href: '/review', icon: RefreshCw },
 ]
 
