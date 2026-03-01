@@ -7,6 +7,7 @@ import { getTodaySchedule, getDayName } from '@/lib/services/schedule.service'
 import Link from 'next/link'
 import { BookOpen, AlertCircle, Clock, Brain, FileText, Target, ClipboardList, Sparkles, Calendar, ArrowRight, RefreshCw, MapPin, Plus } from 'lucide-react'
 import MiniCalendar from '@/components/dashboard/MiniCalendar'
+import CreateNoteButton from '@/components/note/CreateNoteButton'
 
 export default async function DashboardPage() {
     const activeSemester = await getActiveSemester()
@@ -15,7 +16,7 @@ export default async function DashboardPage() {
     const hasSemesters = (await getSemesters()).length > 0
     const stats = await getStudyStats()
     const todaySchedule = await getTodaySchedule()
-    let reviewSummary = { overdue: 0, today: 0, upcoming: 0, total: 0, topItems: [] as any[] }
+    let reviewSummary = { overdue: 0, today: 0, upcoming: 0, total: 0 }
     try { reviewSummary = await getReviewSummary() } catch { }
 
     if (!hasSemesters) {
@@ -139,6 +140,7 @@ export default async function DashboardPage() {
                                                     {sched.course?.professor && <span>· {sched.course.professor}</span>}
                                                 </p>
                                             </div>
+                                            <CreateNoteButton courseId={sched.course_id} sessionId={sched.id} small />
                                             {isNow && (
                                                 <span className="text-[10px] bg-green-500 text-white px-2 py-0.5 rounded-full font-bold animate-pulse">LIVE</span>
                                             )}
@@ -173,8 +175,8 @@ export default async function DashboardPage() {
                                     return (
                                         <div key={task.id} className="flex items-center gap-3.5 px-5 py-3.5 hover:bg-gray-50 transition">
                                             <div className={`flex-shrink-0 w-10 h-10 rounded-xl flex flex-col items-center justify-center text-[10px] font-bold leading-tight ${deadline?.isOverdue ? 'bg-red-50 text-red-600' :
-                                                    deadline?.isUrgent ? 'bg-orange-50 text-orange-600' :
-                                                        'bg-gray-50 text-gray-500'
+                                                deadline?.isUrgent ? 'bg-orange-50 text-orange-600' :
+                                                    'bg-gray-50 text-gray-500'
                                                 }`}>
                                                 <span className="text-[8px] opacity-60">마감</span>
                                                 <span className="text-xs">{deadline?.label}</span>
@@ -188,8 +190,8 @@ export default async function DashboardPage() {
                                                 </p>
                                             </div>
                                             <span className={`text-[9px] px-2 py-0.5 rounded-full font-semibold ${task.status === 'DONE' ? 'bg-green-50 text-green-600' :
-                                                    task.status === 'IN_PROGRESS' ? 'bg-blue-50 text-blue-600' :
-                                                        'bg-gray-100 text-gray-500'
+                                                task.status === 'IN_PROGRESS' ? 'bg-blue-50 text-blue-600' :
+                                                    'bg-gray-100 text-gray-500'
                                                 }`}>
                                                 {task.status === 'DONE' ? '완료' : task.status === 'IN_PROGRESS' ? '진행중' : '대기'}
                                             </span>

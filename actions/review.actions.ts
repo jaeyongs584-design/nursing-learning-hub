@@ -2,76 +2,132 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { getNextReviewDate } from '@/lib/services/review.service'
 
-export type ReviewRating = 'know' | 'confused' | 'forgot' | 'again'
+// ── 복습 결과 처리 ──
 
-// Leitner 간격 조정 규칙
-// know → 다음 단계로 (간격 증가)
-// confused → 현재 단계 유지
-// forgot / again → 1단계로 리셋
-const LEITNER_INTERVALS = [1, 3, 7, 14, 30]
-
-export async function recordReviewAction(
+export async function reviewItemAction(
     itemId: string,
-    itemType: 'wrong_answer' | 'quiz' | 'summary',
-    rating: ReviewRating
+    result: 'know' | 'unsure' | 'forgot'
 ) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { ok: false, error: '인증 필요' }
+    if (!user) return { error: 'Authentication required' }
 
-    // 1. 복습 로그 저장 (review_logs 테이블이 있는 경우)
-    try {
-        await supabase.from('review_logs').insert({
-            user_id: user.id,
-            item_id: itemId,
-            item_type: itemType,
-            rating,
-            reviewed_at: new Date().toISOString(),
+    // Get current item
+    const { data: item, error: fetchErr } = await supabase
+        .from('review_items')
+        .select('*')
+        .eq('id', itemId)
+        .single()
+
+    if (fetchErr || !item) return { error: 'Item not found' }
+
+    let newBox = item.box
+    let nextReviewAt: string
+
+    switch (result) {
+        case 'know':
+            // box +1 (max 5), next = Leitner interval
+            newBox = Math.min(item.box + 1, 5)
+            nextReviewAt = getNextReviewDate(newBox)
+            break
+        case 'unsure':
+            // 유지, next = +3일
+            nextReviewAt = getNextReviewDate(2) // box 2 = 3일
+            break
+        case 'forgot':
+            // box=1, next = 내일
+            newBox = 1
+            nextReviewAt = getNextReviewDate(1) // box 1 = 1일
+            break
+    }
+
+    const { error } = await supabase
+        .from('review_items')
+        .update({
+            box: newBox,
+            next_review_at: nextReviewAt,
+            last_reviewed_at: new Date().toISOString(),
         })
-    } catch {
-        // 테이블 미존재 시 무시 — 로그 없이도 동작
-    }
+        .eq('id', itemId)
 
-    // 2. 평가에 따라 다음 복습 일정 결정
-    // know → 더 긴 간격으로
-    // confused → 같은 간격 유지
-    // forgot/again → 내일 다시
-    let nextIntervalDays = 1
-    if (rating === 'know') {
-        nextIntervalDays = 7 // 잘 알면 1주일 뒤
-    } else if (rating === 'confused') {
-        nextIntervalDays = 3 // 헷갈리면 3일 뒤
-    } else {
-        nextIntervalDays = 1 // 모르면 내일
-    }
+    if (error) return { error: 'Failed to update review' }
 
     revalidatePath('/review')
-    return { ok: true, nextIntervalDays }
+    revalidatePath('/dashboard')
+    return { success: true, newBox, nextReviewAt }
 }
 
-// 세션 결과 요약 저장
-export async function saveSessionSummaryAction(
-    results: { itemId: string; rating: ReviewRating }[]
+// ── 오답에서 복습 항목 자동 등록 ──
+
+export async function createReviewItemFromWrongNote(
+    wrongNoteId: string,
+    courseId: string | null
 ) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { ok: false, error: '인증 필요' }
+    if (!user) return { error: 'Auth required' }
 
-    // 일괄 로그 저장
-    try {
-        const logs = results.map(r => ({
+    // 중복 방지
+    const { data: existing } = await supabase
+        .from('review_items')
+        .select('id')
+        .eq('source_type', 'wrong_note')
+        .eq('source_id', wrongNoteId)
+        .single()
+
+    if (existing) return { success: true, id: existing.id }
+
+    const { data, error } = await supabase
+        .from('review_items')
+        .insert({
             user_id: user.id,
-            item_id: r.itemId,
-            item_type: 'wrong_answer' as const,
-            rating: r.rating,
-            reviewed_at: new Date().toISOString(),
-        }))
-        await supabase.from('review_logs').insert(logs)
-    } catch {
-        // 테이블 미존재 시 무시
-    }
+            course_id: courseId,
+            source_type: 'wrong_note',
+            source_id: wrongNoteId,
+            box: 1,
+            next_review_at: new Date().toISOString().split('T')[0],
+        })
+        .select('id')
+        .single()
 
-    revalidatePath('/review')
-    return { ok: true }
+    if (error) return { error: error.message }
+    return { success: true, id: data?.id }
+}
+
+// ── 암기카드에서 복습 등록 ──
+
+export async function createReviewItemFromFlashcard(
+    noteId: string,
+    courseId: string | null
+) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Auth required' }
+
+    const { data: existing } = await supabase
+        .from('review_items')
+        .select('id')
+        .eq('source_type', 'flashcard')
+        .eq('source_id', noteId)
+        .single()
+
+    if (existing) return { success: true, id: existing.id }
+
+    const { data, error } = await supabase
+        .from('review_items')
+        .insert({
+            user_id: user.id,
+            course_id: courseId,
+            source_type: 'flashcard',
+            source_id: noteId,
+            box: 1,
+            next_review_at: new Date().toISOString().split('T')[0],
+        })
+        .select('id')
+        .single()
+
+    if (error) return { error: error.message }
+    return { success: true, id: data?.id }
 }

@@ -1,178 +1,155 @@
-// Spaced Repetition 복습 스케줄 서비스
-// Leitner System 기반 구현
-// wrong_answers + quiz_attempts 데이터 기반
+// review.service.ts — review_items 테이블 기반 Leitner 복습 서비스
 
 import { createClient } from '../supabase/server'
 
 export type ReviewItem = {
     id: string
-    type: 'wrong_answer' | 'quiz' | 'summary'
-    title: string
-    detail: string
-    courseName: string
-    courseId: string
-    urgency: 'overdue' | 'today' | 'upcoming' | 'review_done'
-    nextReviewDate: string
-    reviewCount: number
-    // 복습 세션용 확장 필드
-    question: string
-    correctAnswer: string
-    explanation: string
-    userAnswer?: string
-    source?: string // 출처 (교재, 강의 등)
+    user_id: string
+    course_id: string | null
+    source_type: 'wrong_note' | 'flashcard' | 'note'
+    source_id: string
+    box: number
+    next_review_at: string
+    last_reviewed_at: string | null
+    status: 'active' | 'suspended'
+    created_at: string
+    // joined data
+    courseName?: string
+    question?: string
+    correctAnswer?: string
+    explanation?: string
+    title?: string
 }
 
-// Leitner intervals (일)
-const LEITNER_INTERVALS = [1, 3, 7, 14, 30]
+// Leitner intervals (일) — box 1~5
+const LEITNER_INTERVALS: Record<number, number> = { 1: 1, 2: 3, 3: 7, 4: 14, 5: 30 }
 
-function calculateLeitner(createdAt: string, now: Date) {
-    const created = new Date(createdAt)
-    const daysSinceCreated = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24))
-
-    let reviewCount = 0
-    let nextReviewDays = 1
-
-    for (const interval of LEITNER_INTERVALS) {
-        if (daysSinceCreated >= interval) {
-            reviewCount++
-        } else {
-            nextReviewDays = interval
-            break
-        }
-    }
-
-    if (reviewCount >= LEITNER_INTERVALS.length) {
-        nextReviewDays = LEITNER_INTERVALS[LEITNER_INTERVALS.length - 1]
-    }
-
-    const nextReviewDate = new Date(created)
-    nextReviewDate.setDate(nextReviewDate.getDate() + nextReviewDays)
-
-    const daysUntilReview = Math.ceil((nextReviewDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-
-    let urgency: ReviewItem['urgency'] = 'upcoming'
-    if (reviewCount >= LEITNER_INTERVALS.length) urgency = 'review_done'
-    else if (daysUntilReview < 0) urgency = 'overdue'
-    else if (daysUntilReview === 0) urgency = 'today'
-
-    return { reviewCount, nextReviewDate, urgency }
+export function getNextReviewDate(box: number, fromDate: Date = new Date()): string {
+    const d = new Date(fromDate)
+    d.setDate(d.getDate() + (LEITNER_INTERVALS[box] || 1))
+    return d.toISOString().split('T')[0]
 }
 
-// 오답노트 기반 복습 대상 계산
-export async function getReviewSchedule(): Promise<ReviewItem[]> {
+// ────────────────── 쿼리 ──────────────────
+
+export async function getReviewSummary() {
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return []
+    const today = new Date().toISOString().split('T')[0]
 
-    // 1. 오답노트에서 복습 대상 추출
-    const { data: wrongAnswers } = await supabase
-        .from('wrong_answer_notes')
+    const { data } = await supabase
+        .from('review_items')
+        .select('id, next_review_at, status')
+        .eq('status', 'active')
+
+    const items = data || []
+    const overdue = items.filter(i => i.next_review_at < today).length
+    const todayCount = items.filter(i => i.next_review_at === today).length
+    const upcoming = items.filter(i => i.next_review_at > today).length
+
+    return { overdue, today: todayCount, upcoming, total: items.length }
+}
+
+export async function getReviewSchedule() {
+    const supabase = await createClient()
+    const today = new Date().toISOString().split('T')[0]
+
+    // Get review_items with wrong_answer info
+    const { data: items } = await supabase
+        .from('review_items')
         .select('*, courses(name)')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(50)
+        .eq('status', 'active')
+        .order('next_review_at', { ascending: true })
 
-    const now = new Date()
-    const items: ReviewItem[] = []
+    if (!items) return []
 
-    if (wrongAnswers) {
-        for (const wa of wrongAnswers) {
-            const { reviewCount, nextReviewDate, urgency } = calculateLeitner(wa.created_at, now)
+    // Enrich with source data
+    const enriched: ReviewItem[] = []
 
-            if (urgency !== 'review_done') {
-                // @ts-ignore
-                const courseName = wa.courses?.name || '과목 미지정'
-                items.push({
-                    id: wa.id,
-                    type: 'wrong_answer',
-                    title: wa.question?.slice(0, 60) + (wa.question?.length > 60 ? '...' : ''),
-                    detail: wa.correct_answer || '',
-                    courseName,
-                    courseId: wa.course_id,
-                    urgency,
-                    nextReviewDate: nextReviewDate.toISOString(),
-                    reviewCount,
-                    // 확장 필드
-                    question: wa.question || '',
-                    correctAnswer: wa.correct_answer || '',
-                    explanation: wa.explanation || '',
-                    userAnswer: wa.my_answer || '',
-                    source: '오답노트',
-                })
+    for (const item of items) {
+        const base: ReviewItem = {
+            ...item,
+            // @ts-ignore
+            courseName: item.courses?.name || '과목 미지정',
+        }
+
+        if (item.source_type === 'wrong_note') {
+            const { data: wn } = await supabase
+                .from('wrong_answer_notes')
+                .select('question, correct_answer, explanation')
+                .eq('id', item.source_id)
+                .single()
+            if (wn) {
+                base.question = wn.question
+                base.correctAnswer = wn.correct_answer
+                base.explanation = wn.explanation
+            }
+        } else if (item.source_type === 'flashcard') {
+            // Flashcard sourced from notes.ai_flashcards
+            const { data: note } = await supabase
+                .from('notes')
+                .select('title, ai_flashcards')
+                .eq('id', item.source_id)
+                .single()
+            if (note) {
+                base.title = note.title || '암기카드'
             }
         }
+
+        enriched.push(base)
     }
 
-    // 2. 최근 퀴즈 중 70점 미만 → 복습 대상
-    const { data: attempts } = await supabase
-        .from('quiz_attempts')
-        .select('*, quizzes(title, course_id, courses(name))')
-        .eq('user_id', user.id)
-        .lt('score', 70)
-        .order('created_at', { ascending: false })
-        .limit(10)
-
-    if (attempts) {
-        for (const attempt of attempts) {
-            const { reviewCount, nextReviewDate, urgency } = calculateLeitner(attempt.created_at, now)
-
-            // @ts-ignore
-            const quiz = attempt.quizzes
-            // @ts-ignore
-            const courseName = quiz?.courses?.name || '과목 미지정'
-
-            items.push({
-                id: attempt.id,
-                type: 'quiz',
-                title: `${quiz?.title || '퀴즈'} (${attempt.score}점)`,
-                detail: `점수가 낮아 복습이 필요합니다`,
-                courseName,
-                courseId: quiz?.course_id || '',
-                urgency: urgency === 'review_done' ? 'upcoming' : urgency,
-                nextReviewDate: nextReviewDate.toISOString(),
-                reviewCount,
-                question: `${quiz?.title || '퀴즈'}에서 ${attempt.score}점을 받았습니다. 오답 문제를 복습하세요.`,
-                correctAnswer: '퀴즈 재도전을 통해 확인하세요.',
-                explanation: '낮은 점수의 퀴즈는 재도전으로 복습하는 것이 효과적입니다.',
-                source: '퀴즈',
-            })
-        }
-    }
-
-    // 우선순위: overdue → today → upcoming
-    const urgencyOrder = { overdue: 0, today: 1, upcoming: 2, review_done: 3 }
-    items.sort((a, b) => urgencyOrder[a.urgency] - urgencyOrder[b.urgency])
-
-    return items
+    return enriched
 }
 
-// 필터링된 복습 항목 가져오기 (세션용)
 export async function getReviewItemsForSession(
-    filter: 'all' | 'overdue' | 'today' | string // string = courseId
+    filter: 'all' | 'overdue' | 'today' | string
 ): Promise<ReviewItem[]> {
-    const items = await getReviewSchedule()
+    const supabase = await createClient()
+    const today = new Date().toISOString().split('T')[0]
 
-    switch (filter) {
-        case 'all':
-            return items.filter(i => i.urgency === 'overdue' || i.urgency === 'today')
-        case 'overdue':
-            return items.filter(i => i.urgency === 'overdue')
-        case 'today':
-            return items.filter(i => i.urgency === 'today')
-        default:
-            // courseId로 필터
-            return items.filter(i => i.courseId === filter && (i.urgency === 'overdue' || i.urgency === 'today'))
-    }
-}
+    let query = supabase
+        .from('review_items')
+        .select('*, courses(name)')
+        .eq('status', 'active')
 
-// 대시보드용 요약
-export async function getReviewSummary() {
-    const items = await getReviewSchedule()
-    return {
-        overdue: items.filter(i => i.urgency === 'overdue').length,
-        today: items.filter(i => i.urgency === 'today').length,
-        upcoming: items.filter(i => i.urgency === 'upcoming').length,
-        total: items.length,
-        topItems: items.slice(0, 5),
+    if (filter === 'overdue') {
+        query = query.lt('next_review_at', today)
+    } else if (filter === 'today') {
+        query = query.eq('next_review_at', today)
+    } else if (filter === 'all') {
+        query = query.lte('next_review_at', today)
+    } else {
+        // courseId filter
+        query = query.eq('course_id', filter).lte('next_review_at', today)
     }
+
+    const { data: items } = await query.order('next_review_at').limit(20)
+    if (!items) return []
+
+    // Enrich
+    const enriched: ReviewItem[] = []
+    for (const item of items) {
+        const base: ReviewItem = {
+            ...item,
+            // @ts-ignore
+            courseName: item.courses?.name || '과목 미지정',
+        }
+
+        if (item.source_type === 'wrong_note') {
+            const { data: wn } = await supabase
+                .from('wrong_answer_notes')
+                .select('question, correct_answer, explanation')
+                .eq('id', item.source_id)
+                .single()
+            if (wn) {
+                base.question = wn.question
+                base.correctAnswer = wn.correct_answer
+                base.explanation = wn.explanation
+            }
+        }
+
+        enriched.push(base)
+    }
+
+    return enriched
 }
