@@ -123,10 +123,9 @@ export default async function DashboardPage() {
                                     const isPast = nowMin >= eh * 60 + em
 
                                     return (
-                                        <Link
+                                        <div
                                             key={sched.id}
-                                            href={`/courses/${sched.course_id}`}
-                                            className={`flex items-center gap-4 px-5 py-3.5 transition group ${isPast ? 'opacity-40' : 'hover:bg-gray-50'}`}
+                                            className={`flex items-center gap-4 px-5 py-3.5 transition ${isPast ? 'opacity-40' : ''}`}
                                         >
                                             <div className="w-0.5 h-10 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
                                             <div className="flex-shrink-0 w-16">
@@ -134,7 +133,9 @@ export default async function DashboardPage() {
                                                 <div className="text-[10px] text-gray-400">~{sched.end_time.slice(0, 5)}</div>
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <h3 className="font-semibold text-sm text-gray-800 truncate group-hover:text-indigo-600 transition">{sched.course?.name}</h3>
+                                                <Link href={`/courses/${sched.course_id}`} className="font-semibold text-sm text-gray-800 truncate hover:text-indigo-600 transition block">
+                                                    {sched.course?.name}
+                                                </Link>
                                                 <p className="text-[11px] text-gray-400 flex items-center gap-1 mt-0.5">
                                                     {sched.location && <><MapPin size={9} /> {sched.location}</>}
                                                     {sched.course?.professor && <span>· {sched.course.professor}</span>}
@@ -144,7 +145,7 @@ export default async function DashboardPage() {
                                             {isNow && (
                                                 <span className="text-[10px] bg-green-500 text-white px-2 py-0.5 rounded-full font-bold animate-pulse">LIVE</span>
                                             )}
-                                        </Link>
+                                        </div>
                                     )
                                 })}
                             </div>
