@@ -86,9 +86,8 @@ export default async function TimetablePage() {
                                 const color = sched.course?.color_code || DEFAULT_COLORS[idx % DEFAULT_COLORS.length]
 
                                 return (
-                                    <Link
+                                    <div
                                         key={sched.id}
-                                        href={`/courses/${sched.course_id}`}
                                         className="absolute left-1 right-1 rounded-lg px-2 py-1.5 overflow-hidden group hover:shadow-lg transition-shadow"
                                         style={{
                                             top: `${top}px`,
@@ -98,7 +97,7 @@ export default async function TimetablePage() {
                                         }}
                                     >
                                         <div className="flex items-start justify-between">
-                                            <div className="min-w-0 flex-1">
+                                            <Link href={`/courses/${sched.course_id}`} className="min-w-0 flex-1">
                                                 <p className="text-xs font-bold truncate" style={{ color }}>{sched.course?.name}</p>
                                                 {height >= 50 && (
                                                     <>
@@ -114,12 +113,10 @@ export default async function TimetablePage() {
                                                         )}
                                                     </>
                                                 )}
-                                            </div>
-                                            <div onClick={e => e.preventDefault()}>
-                                                <ScheduleDeleteButton id={sched.id} />
-                                            </div>
+                                            </Link>
+                                            <ScheduleDeleteButton id={sched.id} />
                                         </div>
-                                    </Link>
+                                    </div>
                                 )
                             })}
                         </div>
