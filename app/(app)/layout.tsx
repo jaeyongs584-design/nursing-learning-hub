@@ -1,14 +1,10 @@
 import Link from 'next/link'
 import { signOut } from '@/actions/auth.actions'
 import MobileBottomNav from '@/components/MobileBottomNav'
+import SidebarNav from '@/components/SidebarNav'
 import {
-    BookOpen,
-    CheckSquare,
-    LayoutDashboard,
     LogOut,
     User,
-    RefreshCw,
-    Calendar,
 } from 'lucide-react'
 
 export default function AppLayout({
@@ -17,41 +13,24 @@ export default function AppLayout({
     children: React.ReactNode
 }) {
     return (
-        <div className="flex h-screen bg-gray-50">
-            {/* Sidebar */}
-            <aside className="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col">
-                <div className="h-16 flex items-center px-6 border-b border-gray-200">
-                    <h1 className="text-xl font-bold text-blue-600">Nursing Hub</h1>
+        <div className="flex h-screen" style={{ background: 'var(--bg-primary)' }}>
+            {/* Sidebar — Dark Notion-style */}
+            <aside className="w-60 hidden md:flex flex-col" style={{ background: 'var(--bg-sidebar)' }}>
+                <div className="h-16 flex items-center px-5">
+                    <h1 className="text-lg font-bold tracking-tight text-white">
+                        <span className="text-indigo-400">N</span>ursing Hub
+                    </h1>
                 </div>
 
-                <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-                    <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100 transition">
-                        <LayoutDashboard size={20} />
-                        <span className="font-medium">오늘</span>
-                    </Link>
-                    <Link href="/timetable" className="flex items-center gap-3 px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100 transition">
-                        <Calendar size={20} />
-                        <span className="font-medium">시간표</span>
-                    </Link>
-                    <Link href="/courses" className="flex items-center gap-3 px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100 transition">
-                        <BookOpen size={20} />
-                        <span className="font-medium">내 과목</span>
-                    </Link>
-                    <Link href="/tasks" className="flex items-center gap-3 px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100 transition">
-                        <CheckSquare size={20} />
-                        <span className="font-medium">할 일 / 과제</span>
-                    </Link>
-                    <Link href="/review" className="flex items-center gap-3 px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100 transition">
-                        <RefreshCw size={20} />
-                        <span className="font-medium">복습</span>
-                    </Link>
-                </nav>
+                <SidebarNav />
 
-                <div className="p-4 border-t border-gray-200">
+                <div className="p-3 mt-auto" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
                     <form action={signOut}>
-                        <button className="flex w-full items-center gap-3 px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100 transition">
-                            <LogOut size={20} />
-                            <span className="font-medium">로그아웃</span>
+                        <button className="sidebar-logout-btn flex w-full items-center gap-3 px-3 py-2 rounded-lg transition text-sm"
+                            style={{ color: 'var(--text-sidebar)' }}
+                        >
+                            <LogOut size={18} />
+                            <span>로그아웃</span>
                         </button>
                     </form>
                 </div>
@@ -59,26 +38,26 @@ export default function AppLayout({
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                {/* Mobile Header (visible only on small screens) */}
-                <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:hidden">
-                    <h1 className="text-xl font-bold text-blue-600">Nursing Hub</h1>
+                {/* Mobile Header */}
+                <header className="h-14 border-b flex items-center justify-between px-4 md:hidden" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+                    <h1 className="text-lg font-bold text-indigo-600 tracking-tight">Nursing Hub</h1>
                     <form action={signOut}>
-                        <button className="p-2 text-gray-500 rounded-md hover:bg-gray-100">
-                            <LogOut size={20} />
+                        <button className="p-2 text-gray-400 rounded-lg hover:bg-gray-100 transition">
+                            <LogOut size={18} />
                         </button>
                     </form>
                 </header>
 
-                {/* Desktop Header */}
-                <header className="h-16 bg-white border-b border-gray-200 hidden md:flex items-center justify-end px-8">
-                    <div className="flex items-center gap-2 text-gray-600">
-                        <User size={20} />
-                        <span className="text-sm font-medium">사용자 페이지</span>
+                {/* Desktop top bar — minimal */}
+                <header className="h-12 border-b hidden md:flex items-center justify-end px-6" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+                    <div className="flex items-center gap-2 text-gray-400 text-xs">
+                        <User size={14} />
+                        <span>마이 페이지</span>
                     </div>
                 </header>
 
                 {/* Scrollable Main Area */}
-                <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-20 md:pb-8">
+                <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
                     {children}
                 </main>
             </div>
